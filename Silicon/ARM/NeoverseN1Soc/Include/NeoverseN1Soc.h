@@ -1,9 +1,9 @@
 /** @file
-*
-* Copyright (c) 2018 - 2020, ARM Limited. All rights reserved.
-*
-* SPDX-License-Identifier: BSD-2-Clause-Patent
-*
+
+ Copyright (c) 2018 - 2021, ARM Limited. All rights reserved.<BR>
+
+ SPDX-License-Identifier: BSD-2-Clause-Patent
+
 **/
 
 #ifndef NEOVERSEN1SOC_PLATFORM_H_
