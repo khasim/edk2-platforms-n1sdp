@@ -27,8 +27,12 @@
   Platform/ARM/N1Sdp/N1SdpPlatform.dec
 
 [LibraryClasses]
+  AcpiLib
   HobLib
   UefiDriverEntryPoint
+
+[Guids]
+  gN1SdpAcpiTableFileGuid
 
 [Protocols]
   gEfiRamDiskProtocolGuid

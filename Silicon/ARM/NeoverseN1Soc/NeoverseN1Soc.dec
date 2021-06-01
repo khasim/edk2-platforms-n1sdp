@@ -68,3 +68,8 @@
   gArmNeoverseN1SocTokenSpaceGuid.PcdCcixRootPortConfigBaseSize|0x00001000|UINT32|0x00000027
 
   gArmNeoverseN1SocTokenSpaceGuid.PcdExtMemorySpace|0x40000000000|UINT64|0x00000029
+
+  # Remote Chip PCIe
+  gArmNeoverseN1SocTokenSpaceGuid.PcdRemotePcieIoTranslation|0x40075200000|UINT64|0x0000004A
+  gArmNeoverseN1SocTokenSpaceGuid.PcdRemotePcieMmio32Translation|0x40000000000|UINT64|0x0000004B
+  gArmNeoverseN1SocTokenSpaceGuid.PcdRemotePcieMmio64Translation|0x40000000000|UINT64|0x0000004C

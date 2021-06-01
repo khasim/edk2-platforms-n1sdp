@@ -6,6 +6,7 @@
 
 **/
 
+#include <Library/AcpiLib.h>
 #include <Library/DebugLib.h>
 #include <Library/UefiBootServicesTableLib.h>
 #include <Protocol/RamDisk.h>
