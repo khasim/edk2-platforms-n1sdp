@@ -20,7 +20,7 @@
   The description of the workarounds included for these limitations can
   be found in the comments below.
 
-  Copyright (c) 2020, ARM Limited. All rights reserved.
+  Copyright (c) 2020 - 2021, ARM Limited. All rights reserved.<BR>
 
   SPDX-License-Identifier: BSD-2-Clause-Patent
 
@@ -36,15 +36,29 @@
 #include <Library/PcdLib.h>
 #include <NeoverseN1Soc.h>
 
+#define BUS_OFFSET      20
+#define DEV_OFFSET      15
+#define FUNC_OFFSET     12
+#define REG_OFFSET      4096
+
 /**
-  Assert the validity of a PCI address. A valid PCI address should contain 1's
-  only in the low 28 bits.
+  Assert the validity of a PCI address. A valid PCI address should contain 1's.
 
   @param  A The address to validate.
 
 **/
 #define ASSERT_INVALID_PCI_ADDRESS(A) \
-  ASSERT (((A) & ~0xfffffff) == 0)
+  ASSERT (((A) & ~0xffffffff) == 0)
+
+#define EFI_PCIE_ADDRESS(bus, dev, func, reg) \
+  (UINT64) ( \
+  (((UINTN) bus)   << BUS_OFFSET)  | \
+  (((UINTN) dev)   << DEV_OFFSET)  | \
+  (((UINTN) func)  << FUNC_OFFSET) | \
+  (((UINTN) (reg)) <  REG_OFFSET ?   \
+   ((UINTN) (reg)) : (UINT64) (LShiftU64 ((UINT64) (reg), 32))))
+
+#define GET_PCIE_BASE_ADDRESS(Address)  (Address & 0xF8000000)
 
 /* Root port Entry, BDF Entries Count */
 #define BDF_TABLE_ENTRY_SIZE    4
@@ -53,6 +67,7 @@
 
 /* BDF table offsets for PCIe */
 #define PCIE_BDF_TABLE_OFFSET   0
+#define CCIX_BDF_TABLE_OFFSET   (16 * 1024)
 
 #define GET_BUS_NUM(Address)    (((Address) >> 20) & 0x7F)
 #define GET_DEV_NUM(Address)    (((Address) >> 15) & 0x1F)
@@ -113,49 +128,64 @@ PciExpressRegisterForRuntimeAccess (
 }
 
 /**
-  Check if the requested PCI address can be safely accessed.
+  Check if the requested PCI address is a valid BDF address.
 
-  SCP performs the initial bus scan, prepares a table of valid BDF addresses
-  and shares them through non-trusted SRAM. This function validates if the
-  requested PCI address belongs to a valid BDF by checking the table of valid
-  entries. If not, this function will return false. This is a workaround to
-  avoid bus fault that occurs when accessing unavailable PCI device due to
-  hardware bug.
+  SCP performs the initial bus scan and prepares a table of valid BDF addresses
+  and shares them through non-trusted SRAM. This function validates if the PCI
+  address from any PCI request falls within the table of valid entries. If not,
+  this function will return 0xFFFFFFFF. This is a workaround to avoid bus fault
+  that happens when accessing unavailable PCI device due to RTL bug.
 
   @param  Address The address that encodes the PCI Bus, Device, Function and
                   Register.
 
-  @return TRUE    BDF can be accessed, valid.
-  @return FALSE   BDF should not be accessed, invalid.
+  @return The base address of PCI Express.
 
 **/
 STATIC
-BOOLEAN
+UINTN
 IsBdfValid (
-  IN      UINTN                     Address
+  IN UINTN Address
   )
 {
+  UINT8 Bus;
+  UINT8 Device;
+  UINT8 Function;
   UINTN BdfCount;
   UINTN BdfValue;
-  UINTN BdfEntry;
   UINTN Count;
   UINTN TableBase;
-  UINTN ConfigBase;
+  UINTN PciAddress;
 
-  ConfigBase = Address & ~0xFFF;
-  TableBase = NEOVERSEN1SOC_NON_SECURE_SRAM_BASE + PCIE_BDF_TABLE_OFFSET;
-  BdfCount = MmioRead32 (TableBase + BDF_TABLE_ENTRY_SIZE);
-  BdfEntry = TableBase + BDF_TABLE_HEADER_SIZE;
+  Bus      = GET_BUS_NUM (Address);
+  Device   = GET_DEV_NUM (Address);
+  Function = GET_FUNC_NUM (Address);
 
-  /* Skip the header & check remaining entry */
-  for (Count = 0; Count < BdfCount; Count++, BdfEntry += BDF_TABLE_ENTRY_SIZE) {
-    BdfValue = MmioRead32 (BdfEntry);
-    if (BdfValue == ConfigBase) {
-      return TRUE;
-    }
+  PciAddress = EFI_PCIE_ADDRESS (Bus, Device, Function, 0);
+
+  if (GET_PCIE_BASE_ADDRESS (Address) ==
+        FixedPcdGet64 (PcdPcieExpressBaseAddress)) {
+    TableBase = NEOVERSEN1SOC_NON_SECURE_SRAM_BASE + PCIE_BDF_TABLE_OFFSET;
+  } else {
+    TableBase = NEOVERSEN1SOC_NON_SECURE_SRAM_BASE + CCIX_BDF_TABLE_OFFSET;
   }
 
-  return FALSE;
+  BdfCount = MmioRead32 (TableBase + BDF_TABLE_ENTRY_SIZE);
+
+  /* Start from the second entry */
+  for (Count = BDF_TABLE_HEADER_COUNT;
+       Count < (BdfCount + BDF_TABLE_HEADER_COUNT);
+       Count++) {
+    BdfValue = MmioRead32 (TableBase + (Count * BDF_TABLE_ENTRY_SIZE));
+    if (BdfValue == PciAddress)
+      break;
+  }
+
+  if (Count == (BdfCount + BDF_TABLE_HEADER_COUNT)) {
+    return mDummyConfigData;
+  } else {
+    return PciAddress;
+  }
 }
 
 /**
@@ -186,20 +216,35 @@ GetPciExpressAddress (
   IN      UINTN                     Address
   )
 {
-  UINT8 Bus, Device, Function;
-  UINTN ConfigAddress;
+  UINT8  Bus;
+  UINT8  Device;
+  UINT8  Function;
+  UINT16 Register;
+  UINTN  ConfigAddress;
 
-  Bus = GET_BUS_NUM (Address);
-  Device = GET_DEV_NUM (Address);
+  // Get the EFI notation
+  Bus      = GET_BUS_NUM (Address);
+  Device   = GET_DEV_NUM (Address);
   Function = GET_FUNC_NUM (Address);
+  Register = GET_REG_NUM (Address);
 
-  if ((Bus == 0) && (Device == 0) && (Function == 0)) {
-    ConfigAddress = PcdGet32 (PcdPcieRootPortConfigBaseAddress) + Address;
-  } else {
-    ConfigAddress = PcdGet64 (PcdPciExpressBaseAddress) + Address;
-    if (!IsBdfValid(Address)) {
-      ConfigAddress = (UINTN)&mDummyConfigData;
-    }
+  ConfigAddress = (UINTN)
+                  ((GET_PCIE_BASE_ADDRESS (Address) ==
+                    FixedPcdGet64 (PcdPcieExpressBaseAddress)) ?
+                      (((Bus == 0) && (Device == 0) && (Function == 0)) ?
+                        PcdGet32 (PcdPcieRootPortConfigBaseAddress
+                        + EFI_PCIE_ADDRESS (Bus, Device, Function, Register)):
+                        PcdGet64 (PcdPcieExpressBaseAddress
+                        + EFI_PCIE_ADDRESS (Bus, Device, Function, Register))) :
+                      (((Bus == 0) && (Device == 0) && (Function == 0)) ?
+                        PcdGet32 (PcdCcixRootPortConfigBaseAddress
+                        + EFI_PCIE_ADDRESS (Bus, Device, Function, Register)):
+                        PcdGet32 (PcdCcixExpressBaseAddress
+                        + EFI_PCIE_ADDRESS (Bus, Device, Function, Register))));
+
+  if (!((Bus == 0) && (Device == 0) && (Function == 0))) {
+    if (IsBdfValid (Address) == mDummyConfigData)
+      ConfigAddress = (UINTN) &mDummyConfigData;
   }
 
   return (VOID *)ConfigAddress;

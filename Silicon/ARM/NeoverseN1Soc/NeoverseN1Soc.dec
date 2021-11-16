@@ -46,6 +46,7 @@
   gArmNeoverseN1SocTokenSpaceGuid.PcdPcieMmio64MaxBase|0x28FFFFFFFF|UINT64|0x00000010
   gArmNeoverseN1SocTokenSpaceGuid.PcdPcieMmio64Size|0x2000000000|UINT64|0x00000011
   gArmNeoverseN1SocTokenSpaceGuid.PcdPcieMmio64Translation|0x0|UINT64|0x00000012
+  gArmNeoverseN1SocTokenSpaceGuid.PcdPcieExpressBaseAddress|0x70000000|UINT64|0x00000013
 
   # CCIX
   gArmNeoverseN1SocTokenSpaceGuid.PcdCcixBusCount|18|UINT32|0x00000016
@@ -53,8 +54,8 @@
   gArmNeoverseN1SocTokenSpaceGuid.PcdCcixBusMin|0|UINT32|0x00000018
   gArmNeoverseN1SocTokenSpaceGuid.PcdCcixExpressBaseAddress|0x68000000|UINT32|0x00000019
   gArmNeoverseN1SocTokenSpaceGuid.PcdCcixIoBase|0x0|UINT32|0x0000001A
-  gArmNeoverseN1SocTokenSpaceGuid.PcdCcixIoMaxBase|0x01FFFF|UINT32|0x0000001B
-  gArmNeoverseN1SocTokenSpaceGuid.PcdCcixIoSize|0x020000|UINT32|0x0000001C
+  gArmNeoverseN1SocTokenSpaceGuid.PcdCcixIoMaxBase|0x00FFFFFF|UINT32|0x0000001B
+  gArmNeoverseN1SocTokenSpaceGuid.PcdCcixIoSize|0x01000000|UINT32|0x0000001C
   gArmNeoverseN1SocTokenSpaceGuid.PcdCcixIoTranslation|0x6D200000|UINT32|0x00000001D
   gArmNeoverseN1SocTokenSpaceGuid.PcdCcixMmio32Base|0x69200000|UINT32|0x0000001E
   gArmNeoverseN1SocTokenSpaceGuid.PcdCcixMmio32MaxBase|0x6D1FFFFF|UINT32|0x00000001F

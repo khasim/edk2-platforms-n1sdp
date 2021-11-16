@@ -21,7 +21,7 @@
 #    2. Root port ECAM space is not capable of 8bit/16bit writes.
 #  This library includes workaround for these limitations as well.
 #
-#  Copyright (c) 2020, ARM Limited. All rights reserved.
+#  Copyright (c) 2020 - 2021, ARM Limited. All rights reserved.<BR>
 #
 #  SPDX-License-Identifier: BSD-2-Clause-Patent
 #
@@ -43,6 +43,8 @@
   Silicon/ARM/NeoverseN1Soc/NeoverseN1Soc.dec
 
 [FixedPcd]
+  gArmNeoverseN1SocTokenSpaceGuid.PcdCcixRootPortConfigBaseAddress
+  gArmNeoverseN1SocTokenSpaceGuid.PcdCcixRootPortConfigBaseSize
   gArmNeoverseN1SocTokenSpaceGuid.PcdPcieRootPortConfigBaseAddress
   gArmNeoverseN1SocTokenSpaceGuid.PcdPcieRootPortConfigBaseSize
 
@@ -53,4 +55,5 @@
   PcdLib
 
 [Pcd]
-  gEfiMdePkgTokenSpaceGuid.PcdPciExpressBaseAddress  ## CONSUMES
+  gArmNeoverseN1SocTokenSpaceGuid.PcdCcixExpressBaseAddress  ## CONSUMES
+  gArmNeoverseN1SocTokenSpaceGuid.PcdPcieExpressBaseAddress
