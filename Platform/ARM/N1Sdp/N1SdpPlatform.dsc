@@ -75,7 +75,7 @@
 [LibraryClasses.common.DXE_DRIVER]
   FdtLib|EmbeddedPkg/Library/FdtLib/FdtLib.inf
   PciHostBridgeLib|Silicon/ARM/NeoverseN1Soc/Library/PciHostBridgeLib/PciHostBridgeLib.inf
-  PciSegmentLib|MdePkg/Library/BasePciSegmentLibPci/BasePciSegmentLibPci.inf
+  PciSegmentLib|Silicon/ARM/NeoverseN1Soc/Library/PciSegmentLib/PciSegmentLib.inf
   PciLib|MdePkg/Library/BasePciLibPciExpress/BasePciLibPciExpress.inf
   PciExpressLib|Silicon/ARM/NeoverseN1Soc/Library/NeoverseN1SocPciExpressLib/PciExpressLib.inf
 
@@ -127,7 +127,6 @@
   gArmTokenSpaceGuid.PcdGicRedistributorsBase|0x300C0000
 
   # PCIe
-  gEfiMdePkgTokenSpaceGuid.PcdPciExpressBaseAddress|0x70000000
   gEmbeddedTokenSpaceGuid.PcdPrePiCpuIoSize|24
   gEfiMdeModulePkgTokenSpaceGuid.PcdSrIovSupport|FALSE
 

@@ -76,8 +76,6 @@
   gEfiMdeModulePkgTokenSpaceGuid.PcdSerialRegisterBase
   gEfiMdePkgTokenSpaceGuid.PcdUartDefaultBaudRate
 
-  gArmN1SdpTokenSpaceGuid.PcdPcieExpressBaseAddress
-
   gArmNeoverseN1SocTokenSpaceGuid.PcdExtMemorySpace
   gArmNeoverseN1SocTokenSpaceGuid.PcdDramBlock2Base
 
@@ -91,6 +89,7 @@
   gArmNeoverseN1SocTokenSpaceGuid.PcdPcieBusCount
   gArmNeoverseN1SocTokenSpaceGuid.PcdPcieBusMax
   gArmNeoverseN1SocTokenSpaceGuid.PcdPcieBusMin
+  gArmNeoverseN1SocTokenSpaceGuid.PcdPcieExpressBaseAddress
   gArmNeoverseN1SocTokenSpaceGuid.PcdPcieIoBase
   gArmNeoverseN1SocTokenSpaceGuid.PcdPcieIoMaxBase
   gArmNeoverseN1SocTokenSpaceGuid.PcdPcieIoSize
